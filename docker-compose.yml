@@ -1,0 +1,34 @@
+services:
+  searxng:
+    #container_name: searxng
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    networks:
+      - internal
+    ports:
+      - "8080:8080" #change 8181 as needed, but not 8080
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    environment:
+      - UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-4}
+      - UWSGI_THREADS=${SEARXNG_UWSGI_THREADS:-4}
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    #  Raise open files limit for concurrent web requests, by default, it is 1024, which can >
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+
+networks:
+  internal:
